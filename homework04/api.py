@@ -9,13 +9,11 @@ import numpy as np
 from igraph import Graph, plot
 from datetime import datetime
 from collections import Counter
+from config import VK_CONFIG,PLOTLY_CONFIG
 
-config = {
-    'VK_ACCESS_TOKEN': 'e3e9333febd373f73776397585c25871061a9fa29c5171b6438734b714a6591b209bb28846af35c3f5f21',
-    'PLOTLY_USERNAME': 'TolMalware',
-    'PLOTLY_API_KEY': 'KUENWx0u8uPe5VfuxCm6'
-}
-
+config = {}
+config.update(VK_CONFIG)
+config.update(PLOTLY_CONFIG)
 plotly.tools.set_credentials_file(
     username=config['PLOTLY_USERNAME'], api_key=config['PLOTLY_API_KEY'])
 
