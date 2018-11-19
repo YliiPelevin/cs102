@@ -9,7 +9,7 @@ import numpy as np
 from igraph import Graph, plot
 from datetime import datetime
 from collections import Counter
-from config import VK_CONFIG,PLOTLY_CONFIG
+from config import VK_CONFIG, PLOTLY_CONFIG
 
 config = {}
 config.update(VK_CONFIG)
@@ -81,7 +81,7 @@ def age_predict(user_id: int)->int:
     return avg_age
 
 
-def messages_get_history(user_id, offset=0, count=20):
+def messages_get_history(user_id: int, offset=0, count=20)->dict:
     """ Получить историю переписки с указанным пользователем
 
     :param user_id: идентификатор пользователя, с которым нужно получить историю переписки
@@ -93,7 +93,7 @@ def messages_get_history(user_id, offset=0, count=20):
     assert isinstance(offset, int), "offset must be positive integer"
     assert offset >= 0, "user_id must be positive integer"
     assert count >= 0, "user_id must be positive integer"
-    max_count =2000
+    max_count = 2000
 
     query_params = {
         'domain': "https://api.vk.com/method",
@@ -116,7 +116,7 @@ def messages_get_history(user_id, offset=0, count=20):
     return messages
 
 
-def count_dates_from_messages(messages):
+def count_dates_from_messages(messages: dict) -> tuple:
     """ Получить список дат и их частот
 
     :param messages: список сообщений
@@ -128,7 +128,8 @@ def count_dates_from_messages(messages):
     y = [dates_stat[date] for date in dates_stat]
     return x, y
 
-def plotly_messages_freq(freq_list):
+
+def plotly_messages_freq(freq_list: tuple) ->None:
     """ Построение графика с помощью Plot.ly
 
     :param freq_list: список дат и их частот
@@ -137,8 +138,7 @@ def plotly_messages_freq(freq_list):
     plotly.plotly.plot(data)
 
 
-
-def get_network(user_id, as_edgelist=True):
+def get_network(user_id: int, as_edgelist=True) ->list:
     users_ids = get_friends(user_id)['response']['items']
     edges = []
     matrix = np.zeros((len(users_ids), len(users_ids)))
@@ -160,7 +160,7 @@ def get_network(user_id, as_edgelist=True):
         return matrix
 
 
-def plot_graph(user_id):
+def plot_graph(user_id: int) -> None:
     surnames = get_friends(user_id, 'last_name')
     vertices = [surnames['response']['items'][i]['last_name']
                 for i in range(len(surnames['response']['items']))]
