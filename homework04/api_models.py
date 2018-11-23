@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class BaseUser(BaseModel):
     """ Модель пользователя с базовыми полями """
-    uid: int
+    id: int
     first_name: str
     last_name: str
     online: int
@@ -20,5 +20,5 @@ class Message(BaseModel):
     """ Модель сообщения """
     date: int
     from_id: int
-    uid: int
+    id: int
     text: str

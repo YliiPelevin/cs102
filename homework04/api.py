@@ -60,27 +60,6 @@ def get_friends(user_id: int, fields="")->dict:
     return response.json()
 
 
-def age_predict(user_id: int)->int:
-    """ Наивный прогноз возраста по возрасту друзей
-
-    Возраст считается как медиана среди возраста всех друзей пользователя
-
-    :param user_id: идентификатор пользователя
-    """
-    assert isinstance(user_id, int), "user_id must be positive integer"
-    assert user_id > 0, "user_id must be positive integer"
-    friends = get_friends(user_id, 'bdate')
-    all_dates = []
-    for i in range(friends['response']['count']):
-        if friends['response']['items'][i].get('bdate'):
-            all_dates.append(friends['response']['items'][i]['bdate'])
-    dates = [all_dates[i] for i in range(len(all_dates))
-             if len(all_dates[i]) >= 8]
-    ages = [2018 - int(i[-4:]) for i in dates]
-    avg_age = int(sum(ages) / len(ages))
-    return avg_age
-
-
 def messages_get_history(user_id: int, offset=0, count=20)->dict:
     """ Получить историю переписки с указанным пользователем
 
@@ -114,77 +93,3 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
         messages.extend(response.json()['response']['items'])
         time.sleep(1)
     return messages
-
-
-def count_dates_from_messages(messages: dict) -> tuple:
-    """ Получить список дат и их частот
-
-    :param messages: список сообщений
-    """
-    dates = [datetime.fromtimestamp(messages[i]['date']).strftime("%Y-%m-%d")
-             for i in range(len(messages))]
-    dates_stat = Counter(dates)
-    x = [date for date in dates_stat]
-    y = [dates_stat[date] for date in dates_stat]
-    return x, y
-
-
-def plotly_messages_freq(freq_list: tuple) ->None:
-    """ Построение графика с помощью Plot.ly
-
-    :param freq_list: список дат и их частот
-    """
-    data = [go.Scatter(x=freq_list[0], y=freq_list[1])]
-    plotly.plotly.plot(data)
-
-
-def get_network(user_id: int, as_edgelist=True) ->list:
-    users_ids = get_friends(user_id)['response']['items']
-    edges = []
-    matrix = np.zeros((len(users_ids), len(users_ids)))
-    for friend_1 in range(len(users_ids)):
-        time.sleep(1)
-        response = get_friends(users_ids[friend_1])
-        if response.get('error'):
-            continue
-        friends = response['response']['items']
-        for friend_2 in range(friend_1 + 1, len(users_ids)):
-            if users_ids[friend_2] in friends:
-                if as_edgelist:
-                    edges.append((friend_1, friend_2))
-                else:
-                    matrix[friend_1][friend_2] = 1
-    if as_edgelist:
-        return edges
-    else:
-        return matrix
-
-
-def plot_graph(user_id: int) -> None:
-    surnames = get_friends(user_id, 'last_name')
-    vertices = [surnames['response']['items'][i]['last_name']
-                for i in range(len(surnames['response']['items']))]
-    edges = get_network(user_id)
-    g = Graph(vertex_attrs={"shape": "circle",
-                            "label": vertices,
-                            "size": 10},
-              edges=edges, directed=False)
-
-    N = len(vertices)
-    visual_style = {
-        "vertex_size": 20,
-        "bbox": (2000, 2000),
-        "margin": 100,
-        "vertex_label_dist": 1.6,
-        "edge_color": "gray",
-        "autocurve": True,
-        "layout": g.layout_fruchterman_reingold(
-            maxiter=100000,
-            area=N ** 2,
-            repulserad=N ** 2)
-    }
-
-    clusters = g.community_multilevel()
-    pal = igraph.drawing.colors.ClusterColoringPalette(len(clusters))
-    g.vs['color'] = pal.get_many(clusters.membership)
-    plot(g, **visual_style)
