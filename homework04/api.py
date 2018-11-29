@@ -10,9 +10,6 @@ from igraph import Graph, plot
 from datetime import datetime
 from collections import Counter
 from config import VK_CONFIG, PLOTLY_CONFIG
-
-config = {}
-config.update(VK_CONFIG)
 def get(url: str, params={}, timeout=5, max_retries=5, backoff_factor=0.3) -> requests.models.Response:
     """ Выполнить GET-запрос
 
@@ -44,7 +41,7 @@ def get_friends(user_id: int, fields="")->dict:
     assert user_id > 0, "user_id must be positive integer"
     query_params = {
         'domain': "https://api.vk.com/method",
-        'access_token': config['VK_ACCESS_TOKEN'],
+        'access_token': VK_CONFIG['VK_ACCESS_TOKEN'],
         'user_id': user_id,
         'fields': fields,
         'v': '5.53'
@@ -70,7 +67,7 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
 
     query_params = {
         'domain': "https://api.vk.com/method",
-        'access_token': config['VK_ACCESS_TOKEN'],
+        'access_token': VK_CONFIG['VK_ACCESS_TOKEN'],
         'user_id': user_id,
         'offset': offset,
         'count': min(count, max_count),
@@ -79,8 +76,8 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
 
     messages = []
     i = 0
-	url ="{domain}/messages.getHistory?offset={offset}&count={count}&user_id={user_id}&" \
-              "access_token={access_token}&v={version}" 
+    url ="{domain}/messages.getHistory?offset={offset}&count={count}&user_id={user_id}&"\
+              "access_token={access_token}&v={version}"
     while i < count:
         if (i / 200) % 3 == 0 and i:
             time.sleep(1)
@@ -96,4 +93,3 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
         i += 200
         query_params['offset'] += i
     return messages
-
