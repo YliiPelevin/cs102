@@ -72,7 +72,6 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
     assert isinstance(offset, int), "offset must be positive integer"
     assert offset >= 0, "user_id must be positive integer"
     assert count >= 0, "user_id must be positive integer"
-    max_count = 2000
 
     query_params = {
         'domain': "https://api.vk.com/method",
@@ -84,12 +83,22 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
     }
 
     messages = []
-    while max_count > 0:
-        url = "{}/messages.getHistory".format("https://api.vk.com/method")
-        response = requests.get(url, params=query_params)
-        max_count -= 20
-        query_params['offset'] += 20
-        query_params['count'] = count
-        messages.extend(response.json()['response']['items'])
-        time.sleep(1)
+    i = 0
+	url ="{domain}/messages.getHistory?offset={offset}&count={count}&user_id={user_id}&" \
+              "access_token={access_token}&v={version}" 
+    while i < count:
+        if (i / 200) % 3 == 0 and i:
+            time.sleep(1)
+        if count - i <= 200:
+            query_params['count'] = count - i
+        url = url.format(**query_params)
+        response = requests.get(url)
+        json_doc = response.json()
+        fail = json_doc.get('error')
+        if fail:
+            raise Exception(json_doc['error']['error_msg'])
+        messages.extend(json_doc['response']['items'])
+        i += 200
+        query_params['offset'] += i
     return messages
+
