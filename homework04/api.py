@@ -13,11 +13,6 @@ from config import VK_CONFIG, PLOTLY_CONFIG
 
 config = {}
 config.update(VK_CONFIG)
-config.update(PLOTLY_CONFIG)
-plotly.tools.set_credentials_file(
-    username=config['PLOTLY_USERNAME'], api_key=config['PLOTLY_API_KEY'])
-
-
 def get(url: str, params={}, timeout=5, max_retries=5, backoff_factor=0.3) -> requests.models.Response:
     """ Выполнить GET-запрос
 
