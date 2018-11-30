@@ -1,15 +1,8 @@
-
 import requests
 import time
-import plotly
-import plotly.graph_objs as go
-import igraph
-from igraph import Graph, plot
-import numpy as np
-from igraph import Graph, plot
-from datetime import datetime
-from collections import Counter
 from config import VK_CONFIG, PLOTLY_CONFIG
+
+
 def get(url: str, params={}, timeout=5, max_retries=5, backoff_factor=0.3) -> requests.models.Response:
     """ Выполнить GET-запрос
 
@@ -30,7 +23,7 @@ def get(url: str, params={}, timeout=5, max_retries=5, backoff_factor=0.3) -> re
             time.sleep(backoff_value)
 
 
-def get_friends(user_id: int, fields="")->dict:
+def get_friends(user_id: int, fields="") -> dict:
     """ Вернуть данных о друзьях пользователя
 
     :param user_id: идентификатор пользователя, список друзей которого нужно получить
@@ -52,7 +45,7 @@ def get_friends(user_id: int, fields="")->dict:
     return response.json()
 
 
-def messages_get_history(user_id: int, offset=0, count=20)->dict:
+def messages_get_history(user_id: int, offset=0, count=20) -> list:
     """ Получить историю переписки с указанным пользователем
 
     :param user_id: идентификатор пользователя, с которым нужно получить историю переписки
@@ -70,14 +63,14 @@ def messages_get_history(user_id: int, offset=0, count=20)->dict:
         'access_token': VK_CONFIG['VK_ACCESS_TOKEN'],
         'user_id': user_id,
         'offset': offset,
-        'count': min(count, max_count),
+        'count': 200,
         'v': '5.53'
     }
 
     messages = []
     i = 0
-    url ="{domain}/messages.getHistory?offset={offset}&count={count}&user_id={user_id}&"\
-              "access_token={access_token}&v={version}"
+    url = "{domain}/messages.getHistory?offset={offset}&count={count}&user_id={user_id}&" \
+          "access_token={access_token}&v={version}"
     while i < count:
         if (i / 200) % 3 == 0 and i:
             time.sleep(1)

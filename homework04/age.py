@@ -17,11 +17,11 @@ def age_predict(user_id: int) -> Optional[float]:
     age_list = []
     for person in friends:
         bday = person.bdate
-        try:
-            bd = datetime.strptime(bday, "%d.%m.%Y")
-        except ValueError:
-            pass
-        else:
+        if bday:
+            try:
+                bd = datetime.strptime(bday, "%d.%m.%Y")
+            except:
+                continue
             age = current_date.year - bd.year - ((current_date.month, current_date.day) < (bd.month, bd.day))
             age_list.append(age)
     if age_list:
