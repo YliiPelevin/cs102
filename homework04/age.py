@@ -12,7 +12,7 @@ def age_predict(user_id: int) -> Optional[float]:
     """
     assert isinstance(user_id, int), "user_id must be positive integer"
     assert user_id > 0, "user_id must be positive integer"
-    friends = [User(**i) for i in get_friends(user_id, 'bdate')]
+    friends = [User(**friend) for friend in get_friends(user_id, 'bdate')]
     current_date = datetime.date(datetime.now())
     age_list = []
     for person in friends:
