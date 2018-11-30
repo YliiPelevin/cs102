@@ -24,12 +24,10 @@ def count_dates_from_messages(messages: List[Message]) -> Tuple[Dates, Frequenci
     """ Получить список дат и их частот
     :param messages: список сообщений
     """
-    c = Counter()
-    for message in messages:
-        date = fromtimestamp(message.date)
-        c[date] += 1
-    result = list(zip(*c.most_common()))
-    return tuple((sorted(result[0]), [c[date] for date in sorted(result[0])]))
+    dates = [fromtimestamp(message.date) for message in messages]
+    dates_counter = Counter(dates)
+    result = list(zip(*dates_counter.most_common()))
+    return tuple((sorted(result[0]), [dates_counter[date] for date in sorted(result[0])]))
 
 
 def plotly_messages_freq(dates: Dates, freq: Frequencies) -> None:
