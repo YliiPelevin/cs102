@@ -20,7 +20,7 @@ def age_predict(user_id: int) -> Optional[float]:
         if bday:
             try:
                 bd = datetime.strptime(bday, "%d.%m.%Y")
-            except:
+            except (ValueError,TypeError):
                 continue
             age = current_date.year - bd.year - ((current_date.month, current_date.day) < (bd.month, bd.day))
             age_list.append(age)

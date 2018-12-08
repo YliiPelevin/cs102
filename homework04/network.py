@@ -2,38 +2,41 @@ from api import get_friends
 import igraph
 from igraph import Graph, plot
 from typing import Union, List, Tuple
+import np
+import time
 
 
-def get_network(users_ids: list, as_edgelist=True) -> Union[List[List[int]], List[Tuple[int, int]]]:
-    user_num = 0
-    edge_list = []
+def get_network(user_id, as_edgelist=True):
+    users_ids = get_friends(user_id)['response']['items']
+    edges = []
     matrix = [[0] * len(users_ids) for _ in range(len(users_ids))]
-    for user in users_ids:
-        if user_num % 2 == 0:
-            time.sleep(1)
-        try:
-            friend_list = get_friends(user)
-        except KeyError:
+    for friend_1 in range(len(users_ids)):
+        time.sleep(0.33333334)
+        response = get_friends(users_ids[friend_1])
+        if response.get('error'):
             continue
-        else:
-            for friend in friend_list:
-                if friend in users_ids:
-                    edge_list.append((users_ids.index(user), users_ids.index(friend)))
-                    matrix[users_ids.index(user)][users_ids.index(friend)] = 1
-            user_num += 1
+        friends = response['response']['items']
+        for friend_2 in range(friend_1 + 1, len(users_ids)):
+            if users_ids[friend_2] in friends:
+                if as_edgelist:
+                    edges.append((friend_1, friend_2))
+                else:
+                    matrix[friend_1][friend_2] = 1
     if as_edgelist:
-        return edge_list
-    return matrix
-
-
-def plot_graph(edge_list: list, name_list=[]) -> None:
-    if name_list == 0:
-        vertices = [i for i in range(len(edge_list))]
+        return edges
     else:
-        vertices = name_list
-    g = Graph(vertex_attrs={"label": vertices},
-              edges=edge_list, directed=False)
-    g.simplify(multiple=True, loops=True)
+        return matrix
+
+
+def plot_graph(user_id=505540783):
+    surnames = get_friends(user_id, 'last_name')['response']['items']
+    vertices = [surnames[i]['last_name'] for i in range(len(surnames))]
+    edges = get_network(user_id)
+    g = Graph(vertex_attrs={"shape": "circle",
+                            "label": vertices,
+                            "size": 10},
+              edges=edges, directed=False)
+
     N = len(vertices)
     visual_style = {
         "vertex_size": 20,
@@ -51,4 +54,5 @@ def plot_graph(edge_list: list, name_list=[]) -> None:
     clusters = g.community_multilevel()
     pal = igraph.drawing.colors.ClusterColoringPalette(len(clusters))
     g.vs['color'] = pal.get_many(clusters.membership)
+
     plot(g, **visual_style)

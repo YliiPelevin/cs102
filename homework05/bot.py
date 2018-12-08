@@ -4,13 +4,13 @@ import config
 import time
 import datetime
 from bs4 import BeautifulSoup
-
+from typing import Optional
 bot = telebot.TeleBot(config.token)
 week_list = ['/monday', '/tuesday', '/wednesday', '/thursday', '/friday', '/saturday']
 visual_list = ['понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу']
 
 
-def get_page(group='K3140', week=''):
+def get_page(group='K3140', week='')->str:
     if week:
         week = str(week) + '/'
     if week == '0/':
@@ -20,12 +20,11 @@ def get_page(group='K3140', week=''):
         week=week,
         group=group)
     response = requests.get(url)
-    print(url)
     web_page = response.text
     return web_page
 
 
-def get_schedule(web_page, day):
+def get_schedule(web_page, day)->Optional[tuple, None]:
     soup = BeautifulSoup(web_page, "html5lib")
 
     # Получаем таблицу с расписанием на день недели
@@ -35,7 +34,7 @@ def get_schedule(web_page, day):
         number = '1day'
     schedule_table = soup.find('table', attrs={'id': number})
     if not schedule_table:
-        return None
+        return
 
     # Время проведения занятий
     times_list = schedule_table.find_all("td", attrs={"class": "time"})
@@ -73,8 +72,6 @@ def get_week(message):
         schedule = get_schedule(web_page, day)
         if not schedule:
             continue
-            bot.send_message(message.chat.id, 'Данные введены неверно')
-            return None
 
         times_lst, locations_lst, lessons_lst = schedule
         for time, location, lesson in zip(times_lst, locations_lst, lessons_lst):
@@ -101,7 +98,6 @@ def get_tomorrow(message):
     if today.weekday() == 7:
         tomorrow = today + datetime.timedelta(days=1)
     tomorrow = week_list[tomorrow.weekday()]
-    print(tomorrow)
     schedule = get_schedule(web_page, tomorrow)
     if not schedule:
         bot.send_message(message.chat.id, 'Данные введены неверно или завтра у указанной группы нет занятий')
@@ -160,7 +156,7 @@ def get_next_lesson(message):
         schedule = get_schedule(web_page, today)
         if not schedule:
             if today != '/saturday':
-                today = week_list[week_list.index(today)+1]
+                today = week_list[week_list.index(today) + 1]
             else:
                 today = '/monday'
             count += 1
@@ -207,6 +203,6 @@ def get_next_lesson(message):
 
 while True:
     try:
-      bot.polling(none_stop=True)
+        bot.polling(none_stop=True)
     except:
         time.sleep(5)
